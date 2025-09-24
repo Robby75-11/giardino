@@ -41,7 +41,7 @@ public class ImageController {
     }
 
     // ✅ Elimina immagine per ID
-    @PreAuthorize("huploadasRole('ADMIN')")
+    @PreAuthorize("HasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) throws IOException {
         imageService.deleteImage(id);
