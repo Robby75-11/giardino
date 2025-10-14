@@ -1,6 +1,6 @@
 package com.example.giardino.security;
 
-import com.example.giardino.model.User;
+import com.example.giardino.model.Cliente;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -28,14 +28,14 @@ public class JwtTool {
     }
 
     // Metodo principale: crea token da User
-    public String createToken(User user) {
+    public String createToken(Cliente cliente) {
         Map<String, Object> claims = Map.of(
-                "roles", List.of("ROLE_" + user.getRole().name())
+                "roles", List.of("ROLE_" + cliente.getRole().name())
         );
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(user.getEmail())
+                .setSubject(cliente.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + durata))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
