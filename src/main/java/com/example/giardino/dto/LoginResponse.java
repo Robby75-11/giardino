@@ -1,7 +1,7 @@
 package com.example.giardino.dto;
 
-import com.example.giardino.model.Cliente;
-import com.example.giardino.model.Prenotazione;
+import com.example.giardino.enumeration.Role;
+import com.example.giardino.model.Utente;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -9,5 +9,8 @@ import lombok.Data;
 @AllArgsConstructor
 public class LoginResponse {
     private String token;
-    private Cliente cliente;
+    private Utente utente;
+    private String email;
+    private Role role;
+
 }

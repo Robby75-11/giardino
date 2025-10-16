@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class PrenotazioneRequestDto {
-    private Long clienteId;
+    private Long utenteId;
     private Long parrucchiereId;
     private Long servizioId;
     private LocalDateTime data;

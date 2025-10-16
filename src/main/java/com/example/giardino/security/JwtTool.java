@@ -1,15 +1,15 @@
 package com.example.giardino.security;
 
-import com.example.giardino.model.Cliente;
+import com.example.giardino.model.Utente;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import java.nio.charset.StandardCharsets;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -27,22 +27,23 @@ public class JwtTool {
         return Keys.hmacShaKeyFor(chiaveSegreta.getBytes(StandardCharsets.UTF_8));
     }
 
-    // Metodo principale: crea token da User
-    public String createToken(Cliente cliente) {
+    // 🔹 Crea token da Utente
+    public String createToken(Utente utente) {
         Map<String, Object> claims = Map.of(
-                "roles", List.of("ROLE_" + cliente.getRole().name())
+                "roles", List.of("ROLE_" + utente.getRole().name()),
+                "id", utente.getId()
         );
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(cliente.getEmail())
+                .setSubject(utente.getEmail())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + durata))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // Verifica token
+    // 🔹 Verifica token
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -55,8 +56,8 @@ public class JwtTool {
         }
     }
 
-    // Estrae username
-    public String getUsernameFromToken(String token) {
+    // 🔹 Estrae email dal token
+    public String getEmailFromToken(String token) {
         Jws<Claims> claimsJws = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -65,7 +66,7 @@ public class JwtTool {
         return claimsJws.getBody().getSubject();
     }
 
-    // Estrae ruoli
+    // 🔹 Estrae ruoli dal token
     public List<String> getRolesFromToken(String token) {
         Jws<Claims> claimsJws = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -73,5 +74,18 @@ public class JwtTool {
                 .parseClaimsJws(token);
 
         return (List<String>) claimsJws.getBody().get("roles");
+    }
+
+    // 🔹 Estrae ID utente dal token
+    public Long getUserIdFromToken(String token) {
+        Jws<Claims> claimsJws = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token);
+
+        Object id = claimsJws.getBody().get("id");
+        if (id instanceof Integer) return ((Integer) id).longValue();
+        if (id instanceof Long) return (Long) id;
+        return null;
     }
 }

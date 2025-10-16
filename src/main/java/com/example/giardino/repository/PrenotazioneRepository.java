@@ -8,6 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PrenotazioneRepository extends JpaRepository<Prenotazione, Long> {
-    List<Prenotazione> findByClienteId(Long clienteId);
+    List<Prenotazione> findByUtenteId(Long utenteId);
     List<Prenotazione> findByParrucchiereId(Long parrucchiereId);
 }

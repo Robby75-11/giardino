@@ -4,12 +4,12 @@ import com.example.giardino.enumeration.Role;
 import lombok.Data;
 
 @Data
-public class RegisterRequestDto {
-    private String nome;
-    private String cognome;
+public class UtenteRequestDto {
     private String email;
     private String password;
-    private String username;
+    private Role role; // UTENTE o ADMIN
+    private String nome;      // dati cliente
+    private String cognome;
     private String telefono;
-    private Role role;
+    private String username;
 }

@@ -36,9 +36,9 @@ public class SecurityConfig {
                 .cors(withDefaults()) // ⚡ usa import static org.springframework.security.config.Customizer.withDefaults
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                        .requestMatchers("/api/clienti/**", "/api/parrucchieri/**").hasRole("AMMINISTRATORE")
-                        .requestMatchers("/prenotazioni/**").hasRole("AMMINISTRATORE")
-                        .requestMatchers( "/prenotazioni/cliente/**").authenticated()
+                        .requestMatchers("/api/parrucchieri/**").authenticated()
+                        .requestMatchers("/servizi/**").authenticated()
+                        .requestMatchers("/prenotazioni").hasAnyRole("UTENTE","AMMINISTRATORE")
 
                         .anyRequest().authenticated()
                 )

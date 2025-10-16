@@ -1,7 +1,7 @@
 package com.example.giardino.service;
 
-import com.example.giardino.model.Cliente;
-import com.example.giardino.repository.ClienteRepository;
+import com.example.giardino.model.Utente;
+import com.example.giardino.repository.UtenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,19 +12,22 @@ import org.springframework.stereotype.Service;
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private UtenteRepository utenteRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Cliente cliente= clienteRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Utente non trovato con email: " + email));
+        // Trova il cliente tramite la relazione User.email
+      Utente utente = utenteRepository.findByEmail(email)
+               .orElseThrow(() -> new UsernameNotFoundException("Utente non trovato con email: " + email));
 
-        // Spring Security User (username, password, authorities)
+
+
         return org.springframework.security.core.userdetails.User
-                .withUsername(cliente.getEmail())
-                .password(cliente.getPassword())
-                .roles(cliente.getRole().name())
+                .withUsername(utente.getEmail())
+                .password(utente.getPassword())
+                .roles(utente.getRole().name())
                 .build();
     }
 }
+
 

@@ -1,11 +1,12 @@
 package com.example.giardino.service;
 
 import com.example.giardino.dto.PrenotazioneRequestDto;
+import com.example.giardino.model.Utente;
 import com.example.giardino.model.Prenotazione;
-import com.example.giardino.repository.ClienteRepository;
 import com.example.giardino.repository.ParrucchiereRepository;
 import com.example.giardino.repository.PrenotazioneRepository;
 import com.example.giardino.repository.ServizioRepository;
+import com.example.giardino.repository.UtenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ public class PrenotazioneService {
     private PrenotazioneRepository prenotazioneRepository;
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private UtenteRepository utenteRepository;
 
     @Autowired
     private ParrucchiereRepository parrucchiereRepository;
@@ -26,21 +27,24 @@ public class PrenotazioneService {
     @Autowired
     private ServizioRepository servizioRepository;
 
+    // 🔹 Tutte le prenotazioni
     public List<Prenotazione> getAll() {
         return prenotazioneRepository.findAll();
     }
 
+    // 🔹 Prenotazione per ID
     public Prenotazione getById(Long id) {
         return prenotazioneRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Prenotazione non trovata"));
+
     }
 
-    // Crea prenotazione a partire dal DTO
-    public Prenotazione create(PrenotazioneRequestDto dto) {
+    // 🔹 Crea prenotazione
+    public Prenotazione create(PrenotazioneRequestDto dto, Utente utenteLoggato) {
         Prenotazione prenotazione = new Prenotazione();
 
-        prenotazione.setCliente(clienteRepository.findById(dto.getClienteId())
-                .orElseThrow(() -> new RuntimeException("Cliente non trovato")));
+        prenotazione.setUtente(utenteLoggato);
+
         prenotazione.setParrucchiere(parrucchiereRepository.findById(dto.getParrucchiereId())
                 .orElseThrow(() -> new RuntimeException("Parrucchiere non trovato")));
         prenotazione.setServizio(servizioRepository.findById(dto.getServizioId())
@@ -51,13 +55,14 @@ public class PrenotazioneService {
         return prenotazioneRepository.save(prenotazione);
     }
 
+    // 🔹 Aggiorna prenotazione
     public Prenotazione update(Long id, PrenotazioneRequestDto dto) {
         Prenotazione existing = prenotazioneRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Prenotazione non trovata"));
 
-        if (dto.getClienteId() != null) {
-            existing.setCliente(clienteRepository.findById(dto.getClienteId())
-                    .orElseThrow(() -> new RuntimeException("Cliente non trovato")));
+        if (dto.getUtenteId() != null) {
+            existing.setUtente(utenteRepository.findById(dto.getUtenteId())
+                    .orElseThrow(() -> new RuntimeException("Utente non trovato")));
         }
 
         if (dto.getParrucchiereId() != null) {
@@ -78,18 +83,20 @@ public class PrenotazioneService {
             existing.setStato(dto.getStato());
         }
 
-
         return prenotazioneRepository.save(existing);
     }
 
+    // 🔹 Elimina prenotazione
     public void delete(Long id) {
         prenotazioneRepository.deleteById(id);
     }
 
-    public List<Prenotazione> getByClienteId(Long clienteId) {
-        return prenotazioneRepository.findByClienteId(clienteId);
+    // 🔹 Filtra per utente
+    public List<Prenotazione> getByUtenteId(Long utenteId) {
+        return prenotazioneRepository.findByUtenteId(utenteId);
     }
 
+    // 🔹 Filtra per parrucchiere
     public List<Prenotazione> getByParrucchiereId(Long parrucchiereId) {
         return prenotazioneRepository.findByParrucchiereId(parrucchiereId);
     }

@@ -1,6 +1,5 @@
 package com.example.giardino.model;
 
-import com.example.giardino.enumeration.Role;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,8 +12,10 @@ public class Prenotazione {
     @Id
     @GeneratedValue
     private Long id;
+
     @ManyToOne
-    private Cliente cliente;
+    @JoinColumn(name = "utente_id")
+    private Utente utente;
 
     @ManyToOne
     private Parrucchiere parrucchiere;

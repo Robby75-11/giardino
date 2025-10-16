@@ -3,10 +3,10 @@ package com.example.giardino.service;
 import com.example.giardino.dto.LoginRequest;
 import com.example.giardino.dto.LoginResponse;
 import com.example.giardino.dto.RegisterRequestDto;
-import com.example.giardino.enumeration.Role;
-import com.example.giardino.model.Cliente;
-import com.example.giardino.repository.ClienteRepository;
+import com.example.giardino.model.Utente;
+import com.example.giardino.repository.UtenteRepository;
 import com.example.giardino.security.JwtTool;
+import com.example.giardino.enumeration.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,65 +17,60 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     @Autowired
-    private JwtTool jwtTool;
+    private UtenteRepository utenteRepository;
 
     @Autowired
-    private ClienteRepository clienteRepository;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private JwtTool jwtTool;
 
-    // 🔐 LOGIN
     public LoginResponse login(LoginRequest request) {
-        // 1️⃣ Verifica credenziali tramite Spring Security
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        // 2️⃣ Recupera cliente dal DB
-        Cliente cliente = clienteRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Cliente non trovato"));
+        Utente utente = utenteRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
 
-        // 3️⃣ Genera token JWT
-        String token = jwtTool.createToken(cliente);
+        String token = jwtTool.createToken(utente);
 
-        // 4️⃣ Restituisce token + dati cliente
-        return new LoginResponse(token, cliente);
+        return new LoginResponse(token, safeUtente(utente), utente.getEmail(), utente.getRole());
     }
 
-    // 🧾 REGISTRAZIONE CLIENTE
-    public Cliente registerCliente(RegisterRequestDto request) {
-        if (clienteRepository.findByEmail(request.getEmail()).isPresent()) {
+    public Utente registerUtente(RegisterRequestDto request) {
+        if (utenteRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email già registrata");
         }
 
-        if (clienteRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Username già in uso");
-        }
+        Utente utente = new Utente();
+        utente.setNome(request.getNome());
+        utente.setCognome(request.getCognome());
+        utente.setTelefono(request.getTelefono());
+        utente.setUsername(request.getUsername());
+        utente.setEmail(request.getEmail());
+        utente.setPassword(passwordEncoder.encode(request.getPassword()));
+        utente.setRole(request.getRole() != null ? request.getRole() : Role.UTENTE);
 
-        Cliente cliente = new Cliente();
-        cliente.setNome(request.getNome());
-        cliente.setCognome(request.getCognome());
-        cliente.setEmail(request.getEmail());
-        cliente.setTelefono(request.getTelefono());
-        cliente.setUsername(request.getUsername());
-        cliente.setPassword(passwordEncoder.encode(request.getPassword()));
-        cliente.setRole(Role.CLIENTE); // Ruolo di default
-
-        return clienteRepository.save(cliente);
+        return utenteRepository.save(utente);
     }
 
-    // 🎟️ GENERA TOKEN
-    public String generateToken(Cliente cliente) {
-        return jwtTool.createToken(cliente);
+    public String generateToken(Utente utente) {
+        return jwtTool.createToken(utente);
     }
 
-    // 🔎 TROVA CLIENTE
-    public Cliente getClienteByEmail(String email) {
-        return clienteRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Cliente non trovato"));
+    private Utente safeUtente(Utente u) {
+        Utente safe = new Utente();
+        safe.setId(u.getId());
+        safe.setNome(u.getNome());
+        safe.setCognome(u.getCognome());
+        safe.setTelefono(u.getTelefono());
+        safe.setUsername(u.getUsername());
+        safe.setEmail(u.getEmail());
+        safe.setRole(u.getRole());
+        return safe;
     }
 }
