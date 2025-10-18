@@ -27,29 +27,14 @@ public class PrenotazioneController {
     // 🔹 Tutte le prenotazioni (solo admin)
     @GetMapping
     @PreAuthorize("hasAnyRole('UTENTE', 'AMMINISTRATORE')")
-    public List<Prenotazione> getAll() {
-        return prenotazioneService.getAll();
-    }
+    public List<Prenotazione> getAll(@AuthenticationPrincipal org.springframework.security.core.userdetails.User currentUser) {
+        Utente utenteLoggato = utenteRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
 
-    // 🔹 Prenotazione per ID
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('UTENTE','AMMINISTRATORE')")
-    public ResponseEntity<Prenotazione> getById(@PathVariable Long id,
-                                                @AuthenticationPrincipal org.springframework.security.core.userdetails.User currentUser) {
-        try {
-            Prenotazione p = prenotazioneService.getById(id);
-
-            // Se utente normale, può vedere solo le proprie prenotazioni
-            Utente utenteLoggato = utenteRepository.findByEmail(currentUser.getUsername())
-                    .orElseThrow(() -> new RuntimeException("Utente non trovato"));
-
-            if (utenteLoggato.getRole().name().equals("UTENTE") && !p.getUtente().getId().equals(utenteLoggato.getId())) {
-                return ResponseEntity.status(403).build();
-            }
-
-            return ResponseEntity.ok(p);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+        if (utenteLoggato.getRole().name().equals("AMMINISTRATORE")) {
+            return prenotazioneService.getAll();
+        } else {
+            return prenotazioneService.getByUtenteId(utenteLoggato.getId());
         }
     }
 
@@ -63,7 +48,6 @@ public class PrenotazioneController {
         Utente utenteLoggato = utenteRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("Utente non trovato"));
 
-        // Se è un utente normale, forza la prenotazione a suo nome (evita che prenoti per altri)
         if (utenteLoggato.getRole().name().equals("UTENTE")) {
             dto.setUtenteId(utenteLoggato.getId());
         }
@@ -74,14 +58,9 @@ public class PrenotazioneController {
 
     // 🔹 Aggiorna prenotazione (solo admin)
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('UTENTE', 'AMMINISTRATORE')")
+    @PreAuthorize("hasRole('AMMINISTRATORE')")
     public ResponseEntity<Prenotazione> update(@PathVariable Long id, @RequestBody PrenotazioneRequestDto dto) {
-        try {
-            Prenotazione updated = prenotazioneService.update(id, dto);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(prenotazioneService.update(id, dto));
     }
 
     // 🔹 Elimina prenotazione (solo admin)
@@ -90,21 +69,5 @@ public class PrenotazioneController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         prenotazioneService.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    // 🔹 Prenotazioni utente loggato
-    @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('UTENTE', 'AMMINISTRATORE)")
-    public List<Prenotazione> getMyPrenotazioni(@AuthenticationPrincipal org.springframework.security.core.userdetails.User currentUser) {
-        Utente utenteLoggato = utenteRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("Utente non trovato"));
-        return prenotazioneService.getByUtenteId(utenteLoggato.getId());
-    }
-
-    // 🔹 Prenotazioni per parrucchiere (admin)
-    @GetMapping("/parrucchiere/{parrucchiereId}")
-    @PreAuthorize("hasRole('AMMINISTRATORE')")
-    public List<Prenotazione> getByParrucchiere(@PathVariable Long parrucchiereId) {
-        return prenotazioneService.getByParrucchiereId(parrucchiereId);
     }
 }

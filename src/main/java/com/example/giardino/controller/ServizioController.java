@@ -20,12 +20,14 @@ public class ServizioController {
 
     // 🔹 Tutti i servizi
     @GetMapping
+    @PreAuthorize("hasAnyRole('UTENTE','AMMINISTRATORE')")
     public List<Servizio> getAll() {
         return servizioService.getAllServizi();
     }
 
     // 🔹 Servizio singolo
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('UTENTE','AMMINISTRATORE')")
     public ResponseEntity<Servizio> getById(@PathVariable Long id) {
         try {
             Servizio servizio = servizioService.getServizioById(id);

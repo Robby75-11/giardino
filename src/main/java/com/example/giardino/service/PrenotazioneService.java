@@ -27,16 +27,15 @@ public class PrenotazioneService {
     @Autowired
     private ServizioRepository servizioRepository;
 
-    // 🔹 Tutte le prenotazioni
+    // 🔹 Tutte le prenotazioni con dettagli
     public List<Prenotazione> getAll() {
-        return prenotazioneRepository.findAll();
+        return prenotazioneRepository.findAllWithDetails();
     }
 
     // 🔹 Prenotazione per ID
     public Prenotazione getById(Long id) {
         return prenotazioneRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Prenotazione non trovata"));
-
     }
 
     // 🔹 Crea prenotazione
@@ -44,7 +43,6 @@ public class PrenotazioneService {
         Prenotazione prenotazione = new Prenotazione();
 
         prenotazione.setUtente(utenteLoggato);
-
         prenotazione.setParrucchiere(parrucchiereRepository.findById(dto.getParrucchiereId())
                 .orElseThrow(() -> new RuntimeException("Parrucchiere non trovato")));
         prenotazione.setServizio(servizioRepository.findById(dto.getServizioId())
@@ -64,24 +62,16 @@ public class PrenotazioneService {
             existing.setUtente(utenteRepository.findById(dto.getUtenteId())
                     .orElseThrow(() -> new RuntimeException("Utente non trovato")));
         }
-
         if (dto.getParrucchiereId() != null) {
             existing.setParrucchiere(parrucchiereRepository.findById(dto.getParrucchiereId())
                     .orElseThrow(() -> new RuntimeException("Parrucchiere non trovato")));
         }
-
         if (dto.getServizioId() != null) {
             existing.setServizio(servizioRepository.findById(dto.getServizioId())
                     .orElseThrow(() -> new RuntimeException("Servizio non trovato")));
         }
-
-        if (dto.getData() != null) {
-            existing.setData(dto.getData());
-        }
-
-        if (dto.getStato() != null) {
-            existing.setStato(dto.getStato());
-        }
+        if (dto.getData() != null) existing.setData(dto.getData());
+        if (dto.getStato() != null) existing.setStato(dto.getStato());
 
         return prenotazioneRepository.save(existing);
     }
@@ -91,13 +81,13 @@ public class PrenotazioneService {
         prenotazioneRepository.deleteById(id);
     }
 
-    // 🔹 Filtra per utente
+    // 🔹 Prenotazioni per utente (con dettagli)
     public List<Prenotazione> getByUtenteId(Long utenteId) {
-        return prenotazioneRepository.findByUtenteId(utenteId);
+        return prenotazioneRepository.findByUtenteIdWithDetails(utenteId);
     }
 
-    // 🔹 Filtra per parrucchiere
+    // 🔹 Prenotazioni per parrucchiere (con dettagli)
     public List<Prenotazione> getByParrucchiereId(Long parrucchiereId) {
-        return prenotazioneRepository.findByParrucchiereId(parrucchiereId);
+        return prenotazioneRepository.findByParrucchiereIdWithDetails(parrucchiereId);
     }
 }

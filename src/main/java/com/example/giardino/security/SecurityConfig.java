@@ -36,9 +36,10 @@ public class SecurityConfig {
                 .cors(withDefaults()) // ⚡ usa import static org.springframework.security.config.Customizer.withDefaults
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                        .requestMatchers("/api/parrucchieri/**").authenticated()
-                        .requestMatchers("/servizi/**").authenticated()
-                        .requestMatchers("/prenotazioni").hasAnyRole("UTENTE","AMMINISTRATORE")
+                        // ✅ Servizi e parrucchieri accessibili a UTENTE e AMMINISTRATORE
+                        .requestMatchers("/api/parrucchieri/**", "/servizi/**")
+                        .hasAnyRole("UTENTE", "AMMINISTRATORE")
+                        .requestMatchers("/prenotazioni/**").hasAnyRole("UTENTE","AMMINISTRATORE")
 
                         .anyRequest().authenticated()
                 )
